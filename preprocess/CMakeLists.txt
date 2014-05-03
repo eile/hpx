@@ -84,6 +84,7 @@ foreach(file ${action_argument_limit_preprocessing_files})
 endforeach()
 
 set(wait_argument_limit_preprocessing_files
+  "hpx/lcos/invoke_when_ready.hpp"
   "hpx/lcos/wait_all.hpp"
   "hpx/lcos/wait_n.hpp"
   "hpx/lcos/wait_any.hpp"
