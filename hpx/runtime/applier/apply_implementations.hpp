@@ -8,6 +8,7 @@
 #if !defined(HPX_APPLIER_APPLY_IMPLEMENTATIONS_JUN_09_2008_0434PM)
 #define HPX_APPLIER_APPLY_IMPLEMENTATIONS_JUN_09_2008_0434PM
 
+#include <hpx/lcos/invoke_when_ready.hpp>
 #include <hpx/util/move.hpp>
 
 #include <boost/preprocessor/cat.hpp>
@@ -15,6 +16,65 @@
 #include <boost/preprocessor/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
+
+namespace hpx
+{
+    ///////////////////////////////////////////////////////////////////////////
+    namespace applier { namespace detail
+    {
+        template <typename Action>
+        struct put_parcel
+        {
+            typedef void result_type;
+
+            explicit put_parcel(naming::id_type const& id,
+                naming::address const& addr, threads::thread_priority priority)
+              : id_(id)
+              , addr_(addr)
+              , priority_(priority)
+            {}
+
+            template <typename Args>
+            result_type send_parcel(Args&& args)
+            {
+                typedef 
+                    typename hpx::actions::extract_action<Action>::type
+                    action_type;
+
+                parcelset::parcel p(id_, complement_addr<action_type>(addr_),
+                    new hpx::actions::transfer_action<action_type>(priority_,
+                        std::forward<Args>(args)));
+                
+                // Send the parcel through the parcel handler
+                hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            }
+
+            result_type operator()()
+            {
+                return send_parcel(util::forward_as_tuple());
+            }
+
+#   define HPX_APPLIER_PUT_PARCEL(Z, N, D)                                     \
+            template <BOOST_PP_ENUM_PARAMS(N, typename A)>                     \
+            result_type operator()(HPX_ENUM_FWD_ARGS(N, A, a))                 \
+            {                                                                  \
+                return send_parcel(util::forward_as_tuple(                     \
+                    HPX_ENUM_FORWARD_ARGS(N, A, a)));                          \
+            }                                                                  \
+            /**/
+
+            BOOST_PP_REPEAT_FROM_TO(
+                1, HPX_ACTION_ARGUMENT_LIMIT
+              , HPX_APPLIER_PUT_PARCEL, _);
+            
+#   undef HPX_APPLIER_PUT_PARCEL
+            
+            naming::id_type id_;
+            naming::address addr_;
+            threads::thread_priority priority_;
+        };
+    }}
+}
 
 #if !defined(HPX_USE_PREPROCESSOR_LIMIT_EXPANSION)
 #  include <hpx/runtime/applier/preprocessed/apply_implementations.hpp>
@@ -56,16 +116,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, HPX_ENUM_FWD_ARGS(N, Arg, arg))
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
-
             // If remote, create a new parcel to be sent to the destination
             // Create a new parcel with the gid, action, and arguments
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(HPX_ENUM_FORWARD_ARGS(N, Arg, arg))));
-
-            // Send the parcel through the parcel handler
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, std::move(addr), priority),
+                HPX_ENUM_FORWARD_ARGS(N, Arg, arg));
             return false;     // destinations are remote
         }
 

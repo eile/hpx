@@ -18,14 +18,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ));
             return false; 
         }
         template <typename Action, typename Arg0>
@@ -295,14 +292,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1>
@@ -572,14 +566,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2>
@@ -849,14 +840,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3>
@@ -1126,14 +1114,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4>
@@ -1403,14 +1388,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4 , Arg5 && arg5)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4 , typename Arg5>
@@ -1680,14 +1662,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4 , Arg5 && arg5 , Arg6 && arg6)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4 , typename Arg5 , typename Arg6>
@@ -1957,14 +1936,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4 , Arg5 && arg5 , Arg6 && arg6 , Arg7 && arg7)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4 , typename Arg5 , typename Arg6 , typename Arg7>
@@ -2234,14 +2210,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4 , Arg5 && arg5 , Arg6 && arg6 , Arg7 && arg7 , Arg8 && arg8)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ) , std::forward<Arg8>( arg8 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ) , std::forward<Arg8>( arg8 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4 , typename Arg5 , typename Arg6 , typename Arg7 , typename Arg8>
@@ -2511,14 +2484,11 @@ namespace hpx
         apply_r_p(naming::address& addr, naming::id_type const& id,
             threads::thread_priority priority, Arg0 && arg0 , Arg1 && arg1 , Arg2 && arg2 , Arg3 && arg3 , Arg4 && arg4 , Arg5 && arg5 , Arg6 && arg6 , Arg7 && arg7 , Arg8 && arg8 , Arg9 && arg9)
         {
-            typedef typename hpx::actions::extract_action<Action>::type action_type;
             
             
-            parcelset::parcel p(id, complement_addr<action_type>(addr),
-                new hpx::actions::transfer_action<action_type>(priority,
-                    util::forward_as_tuple(std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ) , std::forward<Arg8>( arg8 ) , std::forward<Arg9>( arg9 ))));
-            
-            hpx::applier::get_applier().get_parcel_handler().put_parcel(p);
+            lcos::invoke_when_ready(
+                detail::put_parcel<Action>(id, addr, priority),
+                std::forward<Arg0>( arg0 ) , std::forward<Arg1>( arg1 ) , std::forward<Arg2>( arg2 ) , std::forward<Arg3>( arg3 ) , std::forward<Arg4>( arg4 ) , std::forward<Arg5>( arg5 ) , std::forward<Arg6>( arg6 ) , std::forward<Arg7>( arg7 ) , std::forward<Arg8>( arg8 ) , std::forward<Arg9>( arg9 ));
             return false; 
         }
         template <typename Action, typename Arg0 , typename Arg1 , typename Arg2 , typename Arg3 , typename Arg4 , typename Arg5 , typename Arg6 , typename Arg7 , typename Arg8 , typename Arg9>

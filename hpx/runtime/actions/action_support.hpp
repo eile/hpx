@@ -27,8 +27,9 @@
 #include <hpx/traits/action_decorate_function.hpp>
 #include <hpx/traits/action_decorate_continuation.hpp>
 #include <hpx/traits/action_schedule_thread.hpp>
-#include <hpx/traits/type_size.hpp>
+#include <hpx/traits/future_traits.hpp>
 #include <hpx/traits/is_future.hpp>
+#include <hpx/traits/type_size.hpp>
 #include <hpx/runtime/get_lva.hpp>
 #include <hpx/runtime/threads/thread_helpers.hpp>
 #include <hpx/runtime/threads/thread_init_data.hpp>
@@ -42,17 +43,18 @@
 #include <hpx/util/detail/count_num_args.hpp>
 #include <hpx/util/static.hpp>
 #include <hpx/lcos/async_fwd.hpp>
+#include <hpx/lcos/future.hpp>
 
 #if defined(HPX_HAVE_SECURITY)
 #include <hpx/traits/action_capability_provider.hpp>
 #endif
 
 #include <boost/version.hpp>
-#include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/at.hpp>
-#include <boost/fusion/include/size.hpp>
-#include <boost/fusion/include/for_each.hpp>
 #include <boost/fusion/include/at_c.hpp>
+#include <boost/fusion/include/for_each.hpp>
+#include <boost/fusion/include/size.hpp>
+#include <boost/fusion/include/transform_view.hpp>
 #include <boost/ref.hpp>
 #include <boost/foreach.hpp>
 #include <boost/serialization/access.hpp>
@@ -203,6 +205,107 @@ namespace hpx { namespace actions
             automatic_action_registration & register_action()
             {
                 return *this;
+            }
+        };
+
+        ///////////////////////////////////////////////////////////////////////
+        template <typename Future>
+        struct serializable_ready_future_wrapper
+        {
+            static const int invalid = 0;
+            static const int has_value = 1;
+            static const int has_exception = 2;
+
+            typedef typename traits::future_traits<Future>::type value_type;
+
+            explicit serializable_ready_future_wrapper(Future& future)
+              : future_(future)
+            {
+                HPX_ASSERT(future_.is_ready() || !future_.valid());
+            }
+
+            // serialization support
+            void load(hpx::util::portable_binary_iarchive& ar, unsigned)
+            {
+                int state = invalid;
+                ar >> state;
+                if (state == has_value)
+                {
+                    value_type value;
+                    ar >> value;
+
+                    future_ = Future(hpx::make_ready_future(std::move(value)));
+                } else if (state == has_exception) {
+                    boost::exception_ptr exception;
+                    ar >> exception;
+
+                    future_ = Future(hpx::make_error_future<value_type>(exception));
+                } else if (state == invalid) {
+                    future_ = Future();
+                } else {
+                    HPX_ASSERT(false);
+                }
+            }
+
+            void save(hpx::util::portable_binary_oarchive& ar, unsigned) const
+            {
+                if (future_.has_value())
+                {
+                    ar << has_value << future_.get();
+                } else if (future_.has_exception()) {
+                    ar << has_exception; //! fix me: use get_exception
+                    try
+                    {
+                        future_.get();
+                    } catch (...) {
+                        boost::exception_ptr exception = boost::current_exception();
+                        ar << exception;
+                    }
+                } else {
+                    ar << invalid;
+                }
+            }
+
+            BOOST_SERIALIZATION_SPLIT_MEMBER();
+
+            Future& future_;
+        };
+
+        struct serializable_arguments
+        {
+            template <typename, typename Enable = void>
+            struct result;
+
+            template <typename This, typename T>
+            struct result<This(T&), typename boost::disable_if<
+                traits::is_future<typename util::decay<T>::type> >::type>
+            {
+                typedef T& type;
+            };
+
+            template <typename This, typename T>
+            struct result<This(T&), typename boost::enable_if<
+                traits::is_future<typename util::decay<T>::type> >::type>
+            {
+                typedef serializable_ready_future_wrapper<T> type;
+            };
+
+            template <typename T>
+            BOOST_FORCEINLINE typename boost::lazy_disable_if<
+                traits::is_future<typename util::decay<T>::type>,
+                result<serializable_arguments(T&)>
+            >::type operator()(T& v) const
+            {
+                return v;
+            }
+
+            template <typename T>
+            BOOST_FORCEINLINE typename boost::lazy_enable_if<
+                traits::is_future<typename util::decay<T>::type>,
+                result<serializable_arguments(T&)>
+            >::type operator()(T& v) const
+            {
+                return serializable_ready_future_wrapper<T>(v);
             }
         };
     }
@@ -722,7 +825,10 @@ namespace hpx { namespace actions
         // serialization support
         void load(hpx::util::portable_binary_iarchive & ar)
         {
-            util::serialize_sequence(ar, arguments_);
+            boost::fusion::transform_view<
+                arguments_type, detail::serializable_arguments
+            > serializable_arguments(arguments_, detail::serializable_arguments());
+            util::serialize_sequence(ar, serializable_arguments);
 
             // Always serialize the parent information to maintain binary
             // compatibility on the wire.
@@ -756,7 +862,10 @@ namespace hpx { namespace actions
 
         void save(hpx::util::portable_binary_oarchive & ar) const
         {
-            util::serialize_sequence(ar, arguments_);
+            boost::fusion::transform_view<
+                arguments_type const, detail::serializable_arguments
+            > serializable_arguments(arguments_, detail::serializable_arguments());
+            util::serialize_sequence(ar, serializable_arguments);
 
             // Always serialize the parent information to maintain binary
             // compatibility on the wire.
@@ -823,7 +932,7 @@ namespace hpx { namespace actions
     ///////////////////////////////////////////////////////////////////////////
     /// \tparam Component         component type
     /// \tparam Result            return type
-    /// \tparam Arguments         arguments (fusion vector)
+    /// \tparam Arguments         arguments (tuple)
     /// \tparam Derived           derived action class
     template <typename Component, typename Result,
         typename Arguments, typename Derived>
