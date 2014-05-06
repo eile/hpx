@@ -212,58 +212,25 @@ namespace hpx { namespace actions
         template <typename Future>
         struct serializable_ready_future_wrapper
         {
-            static const int invalid = 0;
-            static const int has_value = 1;
-            static const int has_exception = 2;
-
-            typedef typename traits::future_traits<Future>::type value_type;
+            typedef typename util::decay<Future>::type future_type;
 
             explicit serializable_ready_future_wrapper(Future& future)
               : future_(future)
-            {
-                HPX_ASSERT(future_.is_ready() || !future_.valid());
-            }
+            {}
 
             // serialization support
-            void load(hpx::util::portable_binary_iarchive& ar, unsigned)
+            template <typename Archive>
+            void load(Archive& ar, unsigned)
             {
-                int state = invalid;
-                ar >> state;
-                if (state == has_value)
-                {
-                    value_type value;
-                    ar >> value;
-
-                    future_ = Future(hpx::make_ready_future(std::move(value)));
-                } else if (state == has_exception) {
-                    boost::exception_ptr exception;
-                    ar >> exception;
-
-                    future_ = Future(hpx::make_error_future<value_type>(exception));
-                } else if (state == invalid) {
-                    future_ = Future();
-                } else {
-                    HPX_ASSERT(false);
-                }
+                using traits::future_access;
+                future_access<future_type>::load(ar, future_);
             }
 
-            void save(hpx::util::portable_binary_oarchive& ar, unsigned) const
+            template <typename Archive>
+            void save(Archive& ar, unsigned) const
             {
-                if (future_.has_value())
-                {
-                    ar << has_value << future_.get();
-                } else if (future_.has_exception()) {
-                    ar << has_exception; //! fix me: use get_exception
-                    try
-                    {
-                        future_.get();
-                    } catch (...) {
-                        boost::exception_ptr exception = boost::current_exception();
-                        ar << exception;
-                    }
-                } else {
-                    ar << invalid;
-                }
+                using traits::future_access;
+                future_access<future_type>::save(ar, future_);
             }
 
             BOOST_SERIALIZATION_SPLIT_MEMBER();
