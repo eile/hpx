@@ -205,6 +205,27 @@ namespace detail
             return data_;
         }
 
+        virtual boost::exception_ptr get_exception()
+        {
+            // yields control if needed
+            wait();
+
+            if (data_.is_empty()) {
+                // the value has already been moved out of this future
+                HPX_THROW_EXCEPTION(no_state,
+                    "future_data::get_exception",
+                    "this future has no valid shared state");
+            }
+
+            // the thread has been re-activated by one of the actions
+            // supported by this promise (see \a promise::set_event
+            // and promise::set_exception).
+            if (data_.stores_error()) {
+                return data_.get_error();
+            }
+            return boost::exception_ptr();
+        }
+
         /// Set the result of the requested action.
         template <typename Target>
         void set_result(Target && data, error_code& ec = throws)
