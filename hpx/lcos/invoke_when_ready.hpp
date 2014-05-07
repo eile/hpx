@@ -214,12 +214,15 @@ namespace hpx { namespace lcos
         detail::tuple_has_futures<typename util::decay<Args>::type>
       , future<typename detail::invoke_when_ready<
             typename util::decay<F>::type
-          , typename util::decay<Args>::type
+          , typename util::tuple_decay<typename util::decay<Args>::type>::type
          >::result_type>
     >::type invoke_fused_when_ready(F&& f, Args&& args)
     {
         typedef typename util::decay<Args>::type arguments_type;
-        typedef detail::invoke_when_ready<typename util::decay<F>::type, arguments_type> invoker;
+        typedef detail::invoke_when_ready<
+            typename util::decay<F>::type
+          , typename util::tuple_decay<typename util::decay<Args>::type>::type
+        > invoker;
 
         arguments_type lazy_args(std::forward<Args>(args));
         lcos::local::futures_factory<typename invoker::result_type()> p(
